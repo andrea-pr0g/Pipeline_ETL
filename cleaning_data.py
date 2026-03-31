@@ -20,14 +20,14 @@ def delete_na(df, column: str):
     return df
 
 # This function is used to replace values that match a specific pattern with "unknown" in a specific column
-def correct_int(df, column: str):
+def replace_invalid_int(df, column: str):
     df = df.copy()
     df[column] = df[column].str.replace(r"\d+[,.]\d+", "unknown", regex=True)
     df[column] = df[column].str.replace(r"-\d+[,.]?[\d+]?", "unknown", regex=True)
     return df
 
 # This function is used to replace values that match a specific pattern with "unknown" in a specific column
-def correct_float(df, column):
+def replace_invalid_float(df, column):
     df = df.copy()
     df[column] = df[column].str.replace(r"(\b\d+),(\d{1,2}\b)", r"\1.\2", regex=True)
     return df
@@ -45,7 +45,7 @@ def convert_pattern_column(df, column: str, pattern, new_value):
     return df
 
 # This function is used to replace values that match a specific pattern with the mean value of the column in a specific column
-def mean_column(df, column: str, pattern):
+def mean_str_column(df, column: str, pattern):
     df = df.copy()
     df1 = df.copy()
     df1[column] = df1[column].replace(pattern, np.nan, regex=True)
@@ -66,4 +66,23 @@ def correct_email(df, column: str):
     email = r"^(?![a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$)"
     df[column] = df[column].str.replace(email, "unknown", regex=True)
     df[column] = df[column].str.replace(r"\bunknown\w*", "unknown", regex=True)
+    return df
+
+# This function standarizes the text in a specific column by converting it to lowercase and removing leading and trailing whitespace
+def standarize_text(df, column: str):
+    df = df.copy()
+    df[column] = df[column].str.lower().str.strip()
+    return df
+
+# This function is used to find values in a specific column that have an anomaly quantity, meaning that they appear less than a specific number of times in the column
+def anomaly_quantity(df, column: str, quantity: int):
+    df = df.copy()
+    count = pd.DataFrame(df[column].value_counts())
+    count = count[count["count"] < quantity]
+    return count
+
+# This function converts values in a specific column that are written as words (one, two, three, four, five) to their corresponding numeric values (1, 2, 3, 4, 5)
+def one_to_five_from_str(df, column: str):
+    df = df.copy()
+    df[column] = df[column].str.replace({"one": "1", "two": "2", "three": "3", "four": "4", "five": "5"})
     return df
